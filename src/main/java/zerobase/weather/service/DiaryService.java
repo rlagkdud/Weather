@@ -1,10 +1,13 @@
 package zerobase.weather.service;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import zerobase.weather.domain.Diary;
+import zerobase.weather.repository.DiaryRepository;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,16 +22,29 @@ public class DiaryService {
     @Value("${openweathermap.key}")
     private String apiKey;
 
+    private final DiaryRepository diaryRepository;
+
+    public DiaryService(DiaryRepository diaryRepository) {
+        this.diaryRepository = diaryRepository;
+    }
+
+
     public void createDiary(LocalDate date, String text) {
         // open weather map에서 데이터 받아오기
         String weatherString = getWeatherString();
         // 받아온 날씨 데이터 파싱하기
         Map<String, Object> parsedWeather = parseWeather(weatherString);
         // 파싱된 데이터 + 일기 값을 우리 db에 저장하기
-
+        Diary nowDiary = new Diary();
+        nowDiary.setWeather(parsedWeather.get("main").toString());
+        nowDiary.setIcon(parsedWeather.get("icon").toString());
+        nowDiary.setTemperature((double)parsedWeather.get("temp"));
+        nowDiary.setText(text);
+        nowDiary.setDate(date);
+        diaryRepository.save(nowDiary);
     }
     private String getWeatherString() {
-        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=ulsan&appid=" + apiKey;
+        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=ulsan&appid=" + apiKey+"&units=metric";
         try{
             // apiurl로 http url connection 생성
             URL url = new URL(apiUrl);
@@ -51,7 +67,7 @@ public class DiaryService {
 
             return response.toString();
         } catch (Exception e){
-            return "faile to get response";
+            return "fail to get response";
         }
     }
 
@@ -68,7 +84,8 @@ public class DiaryService {
         Map<String, Object> resultMap = new HashMap<>();
         JSONObject mainData = (JSONObject) jsonObject.get("main");
         resultMap.put("temp", mainData.get("temp"));
-        JSONObject weatherData = (JSONObject) jsonObject.get("weather");
+        JSONArray weatherArray = (JSONArray) jsonObject.get("weather");
+        JSONObject weatherData = (JSONObject) weatherArray.get(0);
         resultMap.put("main", weatherData.get("main"));
         resultMap.put("icon", weatherData.get("icon"));
         return resultMap;
