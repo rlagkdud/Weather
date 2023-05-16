@@ -9,11 +9,11 @@
       <change afterPath="$PROJECT_DIR$/../../Mission1/pom.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../../Mission1SurpriseAssignment/Mission1SurpriseAssignment.iml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../../Part7_spring_framework/convpay/src/main/java/com/zerobase/convpay/dto/PayResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/application-api.properties" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../../SupriseAssignment/SupriseAssignment.iml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../../ch2_final_mac/.idea/vcs.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/../../dataStructureHabit/dataStructureHabit.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -225,7 +225,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1684129760018</updated>
-      <workItem from="1684129761480" duration="9474000" />
+      <workItem from="1684129761480" duration="9748000" />
     </task>
     <servers />
   </component>
