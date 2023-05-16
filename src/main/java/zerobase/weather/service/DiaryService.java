@@ -99,4 +99,13 @@ public class DiaryService {
     public List<Diary> readDiaries(LocalDate startDate, LocalDate endDate) {
         return diaryRepository.findAllByDateBetween(startDate, endDate);
     }
+
+    // 날짜에 해당하는 일기 1개를 가져와서 수정
+    public void updateDiary(LocalDate date, String text) {
+        // 날짜에 해당하는 일기 1개를 가져옴
+        Diary nowDiary = diaryRepository.getFirstByDate(date);
+        nowDiary.setText(text);
+        diaryRepository.save(nowDiary);
+
+    }
 }
