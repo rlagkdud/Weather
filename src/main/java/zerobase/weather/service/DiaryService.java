@@ -5,10 +5,13 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import zerobase.weather.domain.DateWeather;
 import zerobase.weather.domain.Diary;
+import zerobase.weather.repository.DateWeatherRepository;
 import zerobase.weather.repository.DiaryRepository;
 
 import java.io.BufferedReader;
@@ -27,9 +30,21 @@ public class DiaryService {
     private String apiKey;
 
     private final DiaryRepository diaryRepository;
+    private final DateWeatherRepository dateWeatherRepository;
 
-    public DiaryService(DiaryRepository diaryRepository) {
+    public DiaryService(DiaryRepository diaryRepository, DateWeatherRepository dateWeatherRepository) {
         this.diaryRepository = diaryRepository;
+        this.dateWeatherRepository = dateWeatherRepository;
+    }
+
+    @Transactional
+    @Scheduled(cron = "0 0 1 * * *")
+    public void saveWeatherDate() {
+        // api를 통해 1시에 데이터 가져와 db에 저장하기
+        dateWeatherRepository.save(getWeatherFromApi());
+
+
+
     }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
@@ -42,44 +57,60 @@ public class DiaryService {
         Diary nowDiary = new Diary();
         nowDiary.setWeather(parsedWeather.get("main").toString());
         nowDiary.setIcon(parsedWeather.get("icon").toString());
-        nowDiary.setTemperature((double)parsedWeather.get("temp"));
+        nowDiary.setTemperature((double) parsedWeather.get("temp"));
         nowDiary.setText(text);
         nowDiary.setDate(date);
         diaryRepository.save(nowDiary);
     }
+
+    private DateWeather getWeatherFromApi() {
+        // open weather map에서 데이터 받아오기
+        String weatherString = getWeatherString();
+        // 받아온 날씨 데이터 파싱하기
+        Map<String, Object> parsedWeather = parseWeather(weatherString);
+
+        DateWeather dateWeather = new DateWeather();
+        dateWeather.setDate(LocalDate.now());
+        dateWeather.setWeather(parsedWeather.get("main").toString());
+        dateWeather.setIcon(parsedWeather.get("icon").toString());
+        dateWeather.setTemperature((double)parsedWeather.get("temp"));
+
+        return dateWeather;
+    }
+
     private String getWeatherString() {
-        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=ulsan&appid=" + apiKey+"&units=metric";
-        try{
+        String apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=ulsan&appid=" + apiKey + "&units=metric";
+        try {
             // apiurl로 http url connection 생성
             URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             // 응답 받아오기
             int responseCode = connection.getResponseCode();
             BufferedReader br;
-            if(responseCode== 200){
+            if (responseCode == 200) {
                 br = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            } else{
+            } else {
                 br = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
             }
             String inputLine;
             StringBuilder response = new StringBuilder();
-            while((inputLine = br.readLine()) != null){
+            while ((inputLine = br.readLine()) != null) {
                 response.append(inputLine);
             }
             br.close();
 
             return response.toString();
-        } catch (Exception e){
+        } catch (Exception e) {
             return "fail to get response";
         }
     }
 
-    private Map<String, Object> parseWeather(String jsonString){
+    private Map<String, Object> parseWeather(String jsonString) {
         JSONParser jsonParser = new JSONParser();
         JSONObject jsonObject;
 
-        try{
+        try {
             jsonObject = (JSONObject) jsonParser.parse(jsonString);
         } catch (ParseException e) {
             throw new RuntimeException(e);
@@ -94,6 +125,7 @@ public class DiaryService {
         resultMap.put("icon", weatherData.get("icon"));
         return resultMap;
     }
+
     @Transactional(readOnly = true)
     public List<Diary> readDiary(LocalDate date) {
         return diaryRepository.findAllByDate(date);
