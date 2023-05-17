@@ -46,6 +46,7 @@ public class DiaryService {
     @Scheduled(cron = "0 0 1 * * *")
     public void saveWeatherDate() {
         // api를 통해 1시에 데이터 가져와 db에 저장하기
+        logger.info("오늘도 날씨 데이터 잘 가져옴!");
         dateWeatherRepository.save(getWeatherFromApi());
     }
 
